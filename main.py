@@ -62,6 +62,7 @@ def dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer, SHIFT_L
 
     theta_metric = smooth_band_powers[Band.Theta] / \
        smooth_band_powers[Band.Alpha]
+    
 
     """ COMPUTER RESPONSE """
     ABT.alpha = alpha_metric
@@ -108,39 +109,39 @@ if __name__ == "__main__":
     try:
         while True:
 
-##            """ ACQUIRE DATA """
-##            eeg_data, timestamp = inlet.pull_chunk(
-##                timeout=1, max_samples=int(SHIFT_LENGTH * fs))
-##
-##            ch_data = np.array(eeg_data)[:, INDEX_CHANNEL]
-##
-##            eeg_buffer, filter_state = utils.update_buffer(
-##                eeg_buffer, ch_data, notch=True,
-##                filter_state=filter_state)
-##
-##            """ COMPUTE BAND POWERS """
-##            data_epoch = utils.get_last_data(eeg_buffer,
-##                                             EPOCH_LENGTH * fs)
-##
-##            band_powers = utils.compute_band_powers(data_epoch, fs)
-##            band_buffer, _ = utils.update_buffer(band_buffer,
-##                                                 np.asarray([band_powers]))
-##
-##            smooth_band_powers = np.mean(band_buffer, axis=0)
-##
-##
-##            """ COMPUTE NEUROFEEDBACK METRICS """
-##            alpha_metric = smooth_band_powers[Band.Alpha] / \
-##                smooth_band_powers[Band.Delta]
-##
-##            beta_metric = smooth_band_powers[Band.Beta] / \
-##                smooth_band_powers[Band.Theta]
-##
-##            theta_metric = smooth_band_powers[Band.Theta] / \
-##               smooth_band_powers[Band.Alpha]
-##            print('A: ', alpha_metric, ' B: ', beta_metric, ' T: ', theta_metric)
-            ABT = dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer)
-            print('A: ', ABT.alpha, ' B: ', ABT.beta, ' T: ', ABT.theta)
+            """ ACQUIRE DATA """
+            eeg_data, timestamp = inlet.pull_chunk(
+                timeout=1, max_samples=int(SHIFT_LENGTH * fs))
+
+            ch_data = np.array(eeg_data)[:, INDEX_CHANNEL]
+
+            eeg_buffer, filter_state = utils.update_buffer(
+                eeg_buffer, ch_data, notch=True,
+                filter_state=filter_state)
+
+            """ COMPUTE BAND POWERS """
+            data_epoch = utils.get_last_data(eeg_buffer,
+                                             EPOCH_LENGTH * fs)
+
+            band_powers = utils.compute_band_powers(data_epoch, fs)
+            band_buffer, _ = utils.update_buffer(band_buffer,
+                                                 np.asarray([band_powers]))
+
+            smooth_band_powers = np.mean(band_buffer, axis=0)
+
+
+            """ COMPUTE NEUROFEEDBACK METRICS """
+            alpha_metric = smooth_band_powers[Band.Alpha] / \
+                smooth_band_powers[Band.Delta]
+
+            beta_metric = smooth_band_powers[Band.Beta] / \
+                smooth_band_powers[Band.Theta]
+
+            theta_metric = smooth_band_powers[Band.Theta] / \
+               smooth_band_powers[Band.Alpha]
+            print('A: ', alpha_metric, ' B: ', beta_metric, ' T: ', theta_metric)
+##            ABT = dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer)
+##            print('A: ', ABT.alpha, ' B: ', ABT.beta, ' T: ', ABT.theta)
 
             """ COMPUTER RESPONSE """
 
