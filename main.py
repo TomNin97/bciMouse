@@ -13,9 +13,6 @@ import numpy as np  # Module that simplifies computations on matrices
 from pylsl import StreamInlet, resolve_byprop  # Module to receive EEG data
 import utils  # Our own utility functions
 
-# Handy little enum to make code more readable
-
-
 class Band:
     Delta = 0
     Theta = 1
@@ -89,59 +86,40 @@ if __name__ == "__main__":
     print('Press Ctrl-C in the console to break the while loop.')
 
     try:
-        # The following loop acquires data, computes band powers, and calculates neurofeedback metrics based on those band powers
         while True:
 
-            """ 3.1 ACQUIRE DATA """
-            # Obtain EEG data from the LSL stream
+            """ ACQUIRE DATA """
             eeg_data, timestamp = inlet.pull_chunk(
                 timeout=1, max_samples=int(SHIFT_LENGTH * fs))
 
-            # Only keep the channel we're interested in
             ch_data = np.array(eeg_data)[:, INDEX_CHANNEL]
 
-            # Update EEG buffer with the new data
             eeg_buffer, filter_state = utils.update_buffer(
                 eeg_buffer, ch_data, notch=True,
                 filter_state=filter_state)
 
-            """ 3.2 COMPUTE BAND POWERS """
-            # Get newest samples from the buffer
+            """ COMPUTE BAND POWERS """
             data_epoch = utils.get_last_data(eeg_buffer,
                                              EPOCH_LENGTH * fs)
 
-            # Compute band powers
             band_powers = utils.compute_band_powers(data_epoch, fs)
             band_buffer, _ = utils.update_buffer(band_buffer,
                                                  np.asarray([band_powers]))
-            # Compute the average band powers for all epochs in buffer
-            # This helps to smooth out noise
+
             smooth_band_powers = np.mean(band_buffer, axis=0)
 
-            # print('Delta: ', band_powers[Band.Delta], ' Theta: ', band_powers[Band.Theta],
-            #       ' Alpha: ', band_powers[Band.Alpha], ' Beta: ', band_powers[Band.Beta])
 
-            """ 3.3 COMPUTE NEUROFEEDBACK METRICS """
-            # These metrics could also be used to drive brain-computer interfaces
-
-            # Alpha Protocol:
-            # Simple redout of alpha power, divided by delta waves in order to rule out noise
+            """ COMPUTE NEUROFEEDBACK METRICS """
             alpha_metric = smooth_band_powers[Band.Alpha] / \
                 smooth_band_powers[Band.Delta]
-            #print('A: ', alpha_metric, ' B: ', beta_metric, ' T: ', theta_metric)
 
-            # Beta Protocol:
-            # Beta waves have been used as a measure of mental activity and concentration
-            # This beta over theta ratio is commonly used as neurofeedback for ADHD
             beta_metric = smooth_band_powers[Band.Beta] / \
                 smooth_band_powers[Band.Theta]
-            #print('Beta Concentration: ', beta_metric)
 
-            # Alpha/Theta Protocol:
-            # This is another popular neurofeedback metric for stress reduction
-            # Higher theta over alpha is supposedly associated with reduced anxiety
             theta_metric = smooth_band_powers[Band.Theta] / \
                smooth_band_powers[Band.Alpha]
+
+            """ COMPUTER RESPONSE """
             print('A: ', alpha_metric, ' B: ', beta_metric, ' T: ', theta_metric)
 
     except KeyboardInterrupt:
