@@ -31,6 +31,7 @@ west = [0, 0, 0]
 INDEX_CHANNEL = [0]
 
 def dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer, SHIFT_LENGTH=SHIFT_LENGTH, INDEX_CHANNEL=INDEX_CHANNEL, EPOCH_LENGTH=EPOCH_LENGTH):
+
     """ ACQUIRE DATA """
     eeg_data, timestamp = inlet.pull_chunk(
         timeout=1, max_samples=int(SHIFT_LENGTH * fs))
@@ -63,7 +64,11 @@ def dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer, SHIFT_L
        smooth_band_powers[Band.Alpha]
 
     """ COMPUTER RESPONSE """
-    print('A: ', alpha_metric, ' B: ', beta_metric, ' T: ', theta_metric)
+    ABT.alpha = alpha_metric
+    ABT.beta = beta_metric
+    ABT.theta = theta_metric
+
+    return ABT
 
 if __name__ == "__main__":
 
@@ -134,7 +139,8 @@ if __name__ == "__main__":
 ##            theta_metric = smooth_band_powers[Band.Theta] / \
 ##               smooth_band_powers[Band.Alpha]
 ##            print('A: ', alpha_metric, ' B: ', beta_metric, ' T: ', theta_metric)
-            dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer)
+            ABT = dataCollection(inlet, fs, np, eeg_buffer, filter_state, band_buffer)
+            print('A: ', ABT.alpha, ' B: ', ABT.beta, ' T: ', ABT.theta)
 
             """ COMPUTER RESPONSE """
 
