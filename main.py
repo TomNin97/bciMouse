@@ -9,6 +9,11 @@ class Band:
     Alpha = 2
     Beta = 3
 
+class ABT:
+    alpha = 0
+    beta = 0
+    theta = 0
+
 # Lengths (in Seconds)
 BUFFER_LENGTH = 5
 EPOCH_LENGTH = 1
@@ -42,7 +47,7 @@ if __name__ == "__main__":
 
     fs = int(info.nominal_srate())
 
-    """ 2. INITIALIZE BUFFERS """
+    """ INITIALIZE BUFFERS """
     eeg_buffer = np.zeros((int(fs * BUFFER_LENGTH), 1))
     filter_state = None  # for use with the notch filter
 
@@ -52,7 +57,9 @@ if __name__ == "__main__":
     # [delta, theta, alpha, beta]
     band_buffer = np.zeros((n_win_test, 4))
 
-    """ 3. GET DATA """
+    """ CALIBRATE FOR USER"""
+
+    """ GET DATA """
 
     # The try/except structure allows to quit the while loop by aborting the
     # script with <Ctrl-C>
