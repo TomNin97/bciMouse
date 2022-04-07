@@ -1,17 +1,7 @@
-"""
-Estimate Relaxation from Band Powers
-This example shows how to buffer, epoch, and transform EEG data from a single
-electrode into values for each of the classic frequencies (e.g. alpha, beta, theta)
-Furthermore, it shows how ratios of the band powers can be used to estimate
-mental state for neurofeedback.
-The neurofeedback protocols described here are inspired by
-*Neurofeedback: A Comprehensive Review on System Design, Methodology and Clinical Applications* by Marzbani et. al
-Adapted from https://github.com/NeuroTechX/bci-workshop
-"""
-
-import numpy as np  # Module that simplifies computations on matrices
-from pylsl import StreamInlet, resolve_byprop  # Module to receive EEG data
-import utils  # Our own utility functions
+import numpy as np  # Matrice computations
+from pylsl import StreamInlet, resolve_byprop # Library responsible for connection
+import utils  # pylsl utilities
+import pyautogui #handles mouse curosor movements
 
 class Band:
     Delta = 0
@@ -19,64 +9,47 @@ class Band:
     Alpha = 2
     Beta = 3
 
-
-""" EXPERIMENTAL PARAMETERS """
-# Modify these to change aspects of the signal processing
-
-# Length of the EEG data buffer (in seconds)
-# This buffer will hold last n seconds of data and be used for calculations
+# Lengths (in Seconds)
 BUFFER_LENGTH = 5
-
-# Length of the epochs used to compute the FFT (in seconds)
 EPOCH_LENGTH = 1
-
-# Amount of overlap between two consecutive epochs (in seconds)
 OVERLAP_LENGTH = 0.8
-
-# Amount to 'shift' the start of each next consecutive epoch
 SHIFT_LENGTH = EPOCH_LENGTH - OVERLAP_LENGTH
 
-# Index of the channel(s) (electrodes) to be used
+# Calibrations [Alpha, Beta, Theta]
+north = [0, 0, 0]
+south = [0, 0, 0]
+east = [0, 0, 0]
+west = [0, 0, 0]
+
+# Muse 2 Electrodes
 # 0 = left ear, 1 = left forehead, 2 = right forehead, 3 = right ear
 INDEX_CHANNEL = [0]
 
 if __name__ == "__main__":
 
-    """ 1. CONNECT TO EEG STREAM """
-
-    # Search for active LSL streams
+    """ MUSE 2 CONNECTION """
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
     if len(streams) == 0:
         raise RuntimeError('Can\'t find EEG stream.')
 
-    # Set active EEG stream to inlet and apply time correction
     print("Start acquiring data")
     inlet = StreamInlet(streams[0], max_chunklen=12)
     eeg_time_correction = inlet.time_correction()
 
-    # Get the stream info and description
     info = inlet.info()
     description = info.desc()
 
-    # Get the sampling frequency
-    # This is an important value that represents how many EEG data points are
-    # collected in a second. This influences our frequency band calculation.
-    # for the Muse 2016, this should always be 256
     fs = int(info.nominal_srate())
 
     """ 2. INITIALIZE BUFFERS """
-
-    # Initialize raw EEG data buffer
     eeg_buffer = np.zeros((int(fs * BUFFER_LENGTH), 1))
     filter_state = None  # for use with the notch filter
 
-    # Compute the number of epochs in "buffer_length"
     n_win_test = int(np.floor((BUFFER_LENGTH - EPOCH_LENGTH) /
                               SHIFT_LENGTH + 1))
 
-    # Initialize the band power buffer (for plotting)
-    # bands will be ordered: [delta, theta, alpha, beta]
+    # [delta, theta, alpha, beta]
     band_buffer = np.zeros((n_win_test, 4))
 
     """ 3. GET DATA """
